@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Interactivo: Consumo de API Pública con Fetch JS (Rick & Morty API)</title>
+    <meta name="description" content="Portal web interactivo que consume The Rick and Morty REST API utilizando fetch(), async/await y Promesas (.then/.catch) según las orientaciones de Diseño de Sistemas de Internet.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Silkscreen:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <!-- Barra de Navegación -->
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <span class="logo-icon">🛸</span>
+                <span class="logo-text">Multiverse<span class="highlight">.API</span></span>
+            </div>
+            <nav class="nav-links">
+                <a href="#demostracion" class="nav-link">Explorador en Vivo</a>
+                <a href="#explicacion" class="nav-link">Flujo Fetch Paso a Paso</a>
+                <a href="#comparativa" class="nav-link">async/await vs .then()</a>
+                <!-- <a href="#buenas-practicas" class="nav-link">Buenas Prácticas</a> -->
+                <button type="button" id="btnToggleFavView" class="nav-badge-fav" title="Ver personajes guardados en LocalStorage">
+                    ⭐ Favoritos (<span id="favCountBadge">0</span>)
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-container">
+
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="hero-badge">🌌 Diseño de Sistemas de Internet • Consumo de Servicios Web Públicos • ERICK COREA SOTO</div>
+            <h1 class="hero-title">Explorador Interactivo del Multiverso con <span class="gradient-text">fetch()</span></h1>
+            <p class="hero-subtitle">
+                Portal web que consume en tiempo real la API pública REST
+                <code>https://rickandmortyapi.com/api/character</code> implementando asincronía con
+                <code>async/await</code>, cadenas de <code>Promesas (.then/.catch)</code> y telemetría HTTP.
+            </p>
+        </section>
+
+        <!-- Laboratorio Interactivo -->
+        <section id="demostracion" class="card">
+            <div class="card-header">
+                <div>
+                    <h2>🧪 Consola Interactiva de Peticiones HTTP</h2>
+                    <p>Filtra por nombre, ID, estado vital o especie y observa cómo se construye el endpoint REST y se transforma el JSON.</p>
+                </div>
+            </div>
+
+            <div class="demo-controls">
+                <div class="controls-grid">
+                    <!-- Buscador Principal -->
+                    <div class="input-group">
+                        <label for="searchInput">Endpoint REST (Nombre o ID):</label>
+                        <div class="url-bar">
+                            <span class="http-method">GET</span>
+                            <span class="url-base" id="endpointPreview">/character?name=rick</span>
+                            <input type="text" id="searchInput" value="rick" placeholder="Ej: rick, morty, summer, 1, 242">
+                        </div>
+                    </div>
+
+                    <!-- Filtro Estado -->
+                    <div class="input-group">
+                        <label for="statusFilter">Estado Vital (status):</label>
+                        <select id="statusFilter" class="filter-select">
+                            <option value="">Todos los estados</option>
+                            <option value="alive">🟢 Alive (Vivo)</option>
+                            <option value="dead">🔴 Dead (Fallecido)</option>
+                            <option value="unknown">⚪ Unknown (Desconocido)</option>
+                        </select>
+                    </div>
+
+                    <!-- Filtro Especie -->
+                    <div class="input-group">
+                        <label for="speciesFilter">Especie (species):</label>
+                        <select id="speciesFilter" class="filter-select">
+                            <option value="">Todas las especies</option>
+                            <option value="Human">🧑 Human (Humano)</option>
+                            <option value="Alien">👽 Alien (Alienígena)</option>
+                            <option value="Humanoid">🤖 Humanoid</option>
+                            <option value="Robot">🦾 Robot</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Accesos rápidos -->
+                <div class="quick-chips">
+                    <span class="chip-label">Pruebas rápidas:</span>
+                    <button type="button" class="chip-btn" data-query="rick">🧪 Rick Sanchez</button>
+                    <button type="button" class="chip-btn" data-query="morty">👦 Morty Smith</button>
+                    <button type="button" class="chip-btn" data-query="summer">👧 Summer</button>
+                    <button type="button" class="chip-btn" data-query="47">🦅 Birdperson (#47)</button>
+                    <button type="button" class="chip-btn" data-query="242">🟦 Mr. Meeseeks (#242)</button>
+                </div>
+
+                <!-- Botones de Ejecución -->
+                <div class="action-buttons">
+                    <div class="btn-group-left">
+                        <button type="button" id="btnFetchAsync" class="btn btn-primary">
+                            <span>⚡</span> Ejecutar con <code>async/await</code>
+                        </button>
+                        <button type="button" id="btnFetchPromises" class="btn btn-secondary">
+                            <span>🔄</span> Ejecutar con <code>.then()</code>
+                        </button>
+                    </div>
+                    <div class="btn-group-right">
+                        <button type="button" id="btnRandomChar" class="btn btn-outline">
+                            🎲 Personaje Aleatorio
+                        </button>
+                        <button type="button" id="btnSimulate404" class="btn btn-outline" title="Prueba cómo fetch() maneja un código HTTP 404">
+                            🛑 Simular Error 404
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Barra de Métricas HTTP -->
+            <div id="metricsBar" class="metrics-bar">
+                <div class="metric-item">
+                    <span class="metric-label">Estado HTTP</span>
+                    <span id="metricStatus" class="badge badge-success">200 OK</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">Latencia de Red</span>
+                    <span id="metricTime" class="metric-value">0 ms</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">Content-Type</span>
+                    <span id="metricType" class="metric-value">application/json</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">Registros API</span>
+                    <span id="metricTotal" class="badge badge-purple">0 reg.</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">Mecanismo Utilizado</span>
+                    <span id="metricMode" class="badge badge-info">async/await</span>
+                </div>
+            </div>
+
+            <!-- Pestañas de Resultados -->
+            <div class="tabs-container">
+                <div class="tabs-header">
+                    <button type="button" class="tab-btn active" data-tab="tab-card">🖼️ Portal Visual & Tarjetas</button>
+                    <button type="button" class="tab-btn" data-tab="tab-json">📋 Payload JSON (Raw)</button>
+                    <button type="button" class="tab-btn" data-tab="tab-code">💻 Código JS Ejecutado</button>
+                </div>
+
+                <div class="tabs-content">
+                    <!-- Pestaña 1: Tarjetas Renderizadas -->
+                    <div id="tab-card" class="tab-pane active">
+                        <div id="characterDisplayArea"></div>
+                    </div>
+
+                    <!-- Pestaña 2: Respuesta JSON -->
+                    <div id="tab-json" class="tab-pane">
+                        <div class="code-header">
+                            <span> Cuerpo de Respuesta JSON devuelto por la API</span>
+                            <button type="button" id="btnCopyJson" class="btn-sm">📋 Copiar JSON</button>
+                        </div>
+                        <pre id="jsonOutput" class="code-block"><code>// Ejecuta una consulta para inspeccionar el JSON...</code></pre>
+                    </div>
+
+                    <!-- Pestaña 3: Código JS -->
+                    <div id="tab-code" class="tab-pane">
+                        <div class="code-header">
+                            <span id="codeTitle">Código JavaScript Ejecutado</span>
+                            <button type="button" id="btnCopyCode" class="btn-sm">📋 Copiar Código</button>
+                        </div>
+                        <pre id="codeOutput" class="code-block"><code id="codeSnippetContent"></code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Explicación Paso a Paso -->
+        <section id="explicacion">
+            <h2 class="section-title">💡 Mecanismo de Consumo Web con <code>fetch()</code></h2>
+            <p class="section-subtitle">Los 4 pilares abordados en clase para comunicar nuestra aplicación frontend con un servicio web REST público.</p>
+
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">01</div>
+                    <h3>Petición HTTP Asíncrona</h3>
+                    <p>
+                        Invocamos <code>fetch(url)</code> pasando el endpoint de <strong>The Rick and Morty API</strong>. El navegador inicia la solicitud sin bloquear el hilo principal y retorna una <strong>Promise</strong>.
+                    </p>
+                    <div class="mini-code">
+                        <code>const res = await fetch('https://rickandmortyapi.com/api/character/1');</code>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">02</div>
+                    <h3>Verificación de Estado HTTP</h3>
+                    <p>
+                        <code>fetch()</code> no rechaza promesas en códigos 404 o 500. Es indispensable evaluar <code>res.ok</code> (código 200–299) antes de procesar los datos.
+                    </p>
+                    <div class="mini-code">
+                        <code>if (!res.ok) throw new Error('Error HTTP: ' + res.status);</code>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">03</div>
+                    <h3>Deserialización del JSON</h3>
+                    <p>
+                        El método <code>res.json()</code> lee el flujo de bytes del cuerpo HTTP y retorna una segunda Promesa con el objeto JavaScript listo para usar.
+                    </p>
+                    <div class="mini-code">
+                        <code>const data = await res.json();</code>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">04</div>
+                    <h3>Renderizado Dinámico y Errores</h3>
+                    <p>
+                        Transformamos los datos recibidos en nodos del DOM y capturamos cualquier excepción de red o validación mediante <code>try...catch</code> o <code>.catch()</code>.
+                    </p>
+                    <div class="mini-code">
+                        <code>try { renderizar(data); } catch (e) { mostrarError(e); }</code>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Comparativa de Sintaxis -->
+        <section id="comparativa" class="card">
+            <div class="card-header">
+                <div>
+                    <h2>⚔️ Comparativa de Mecanismos: <code>async/await</code> vs <code>.then()</code></h2>
+                    <p>Ambos mecanismos operan sobre Promesas nativas de ECMAScript y están implementados en los botones del laboratorio superior.</p>
+                </div>
+            </div>
+
+            <div class="comparison-grid">
+                <div class="code-box">
+                    <div class="code-box-header badge-modern">
+                        <span>✨ Enfoque 1: Sintaxis Moderna (async / await)</span>
+                    </div>
+                    <pre class="code-block"><code>async function obtenerPersonaje(id = 1) {
+  const url = `https://rickandmortyapi.com/api/character/${id}`;
+
+  try {
+    // 1. Petición HTTP GET
+    const res = await fetch(url);
+
+    // 2. Validar código de estado HTTP (200-299)
+    if (!res.ok) {
+      throw new Error(`Estado HTTP: ${res.status}`);
+    }
+
+    // 3. Parsear flujo JSON
+    const personaje = await res.json();
+
+    // 4. Actualizar interfaz
+    console.log(personaje.name, personaje.species);
+  } catch (error) {
+    console.error('Error capturado:', error.message);
+  }
+}</code></pre>
+                </div>
+
+                <div class="code-box">
+                    <div class="code-box-header badge-traditional">
+                        <span>📜 Enfoque 2: Cadena de Promesas (.then / .catch)</span>
+                    </div>
+                    <pre class="code-block"><code>function obtenerPersonajeConPromesas(id = 1) {
+  const url = `https://rickandmortyapi.com/api/character/${id}`;
+
+  // 1. Iniciar petición fetch
+  fetch(url)
+    .then(res => {
+      // 2. Validar respuesta HTTP
+      if (!res.ok) {
+        throw new Error(`Estado HTTP: ${res.status}`);
+      }
+      // 3. Retornar promesa de parseo JSON
+      return res.json();
+    })
+    .then(personaje => {
+      // 4. Utilizar los datos recibidos
+      console.log(personaje.name, personaje.species);
+    })
+    .catch(error => {
+      console.error('Error en la cadena:', error.message);
+    });
+}</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Buenas Prácticas
+        <section id="buenas-practicas" class="card">
+            <div class="card-header">
+                <div>
+                    <h2>🛡️ Buenas Prácticas Aplicadas en este Portal</h2>
+                    <p>Principios de ingeniería de software aplicados al consumo de servicios web públicos.</p>
+                </div>
+            </div>
+
+            <div class="tips-grid">
+                <div class="tip-card">
+                    <div class="tip-icon">🛑</div>
+                    <div>
+                        <h4>1. Control Explícito de Errores 404</h4>
+                        <p>Puedes comprobarlo presionando el botón <strong>Simular Error 404</strong>: <code>fetch()</code> resuelve la promesa con <code>response.ok = false</code> y nuestro bloque lanza un error controlado.</p>
+                    </div>
+                </div>
+
+                <div class="tip-card">
+                    <div class="tip-icon">⚡</div>
+                    <div>
+                        <h4>2. Medición de Latencia con Performance API</h4>
+                        <p>Utilizamos <code>performance.now()</code> antes y después de la llamada de red para calcular el tiempo exacto de respuesta en milisegundos.</p>
+                    </div>
+                </div>
+
+                <div class="tip-card">
+                    <div class="tip-icon">🔍</div>
+                    <div>
+                        <h4>3. Parámetros Query String Seguros</h4>
+                        <p>Construimos filtros dinámicos (<code>?name=rick&status=alive</code>) usando la interfaz nativa <code>URLSearchParams</code> para codificar caracteres especiales.</p>
+                    </div>
+                </div>
+
+                <div class="tip-card">
+                    <div class="tip-icon">🌐</div>
+                    <div>
+                        <h4>4. Cabeceras CORS Abiertas</h4>
+                        <p>The Rick and Morty API habilita <code>Access-Control-Allow-Origin: *</code>, permitiendo peticiones directas desde el navegador sin bloqueos de origen cruzado.</p>
+                    </div>
+                </div>
+            </div>
+        </section> -->
+
+    </main>
+
+    <!-- Notificación Toast -->
+    <div id="toastNotification" class="toast-notification"></div>
+
+    <!-- Pie de Página -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>Desarrollado por ERICK LEONEL COREA SOTO <strong>Diseño de Sistemas de Internet</strong> | Consumiendo <a href="https://rickandmortyapi.com/" target="_blank" rel="noreferrer">The Rick and Morty REST API</a></p>
+            <p style="margin-top:0.4rem; font-size:0.8rem;">Basado en los mecanismos de clase (<code>fetch</code>, <code>async/await</code>, <code>.then/.catch</code> y telemetría HTTP)</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
